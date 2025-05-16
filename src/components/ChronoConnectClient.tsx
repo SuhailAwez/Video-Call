@@ -3,6 +3,7 @@
 
 import type { ChatMessage } from '@/types';
 import type PeerJS from 'peerjs';
+import type { MediaConnection, DataConnection } from 'peerjs';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { summarizeChatHistory } from '@/ai/flows/summarize-chat';
 import { Button } from '@/components/ui/button';
@@ -49,8 +50,8 @@ export default function ChronoConnectClient() {
 
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
-  const callRef = useRef<PeerJS.MediaConnection | null>(null);
-  const dataConnectionRef = useRef<PeerJS.DataConnection | null>(null);
+ const callRef = useRef<MediaConnection | null>(null);
+ const dataConnectionRef = useRef<DataConnection | null>(null);
 
   const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
   const cameraStreamRef = useRef<MediaStream | null>(null); 
@@ -220,7 +221,7 @@ export default function ChronoConnectClient() {
       peerInstance.current.destroy();
     }
     
-    const newPeer = new loadedPeer(undefined, {
+    const newPeer = new loadedPeer( {
        debug: 2 
     });
     peerInstance.current = newPeer;
@@ -445,7 +446,11 @@ export default function ChronoConnectClient() {
       await stopSharingLogic();
     } else { 
       try {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: { suppressLocalAudioPlayback: true } });
+       const screenStream = await navigator.mediaDevices.getDisplayMedia({
+              video: { cursor: "always" } as any,
+              audio: { suppressLocalAudioPlayback: true } as any
+            });
+
         const screenVideoTrack = screenStream.getVideoTracks()[0];
         
         // No need to save cameraStreamRef.current here if it's already the designated camera stream.
